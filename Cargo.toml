@@ -5,7 +5,7 @@ authors = ["John Peel <john@dgby.org>"]
 edition = "2021"
 description = "Provides a macro for quickly creating REST api client structs"
 repository = "https://github.com/JohnPeel/api-client/"
-documentation = "https://johnpeel.github.io/api-client/api_client/"
+documentation = "https://docs.rs/api-client/latest/api_client/"
 license = "MIT"
 readme = "README.md"
 

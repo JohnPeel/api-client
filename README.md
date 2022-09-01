@@ -4,8 +4,8 @@
 [mit-url]: https://github.com/JohnPeel/api-client/blob/master/LICENSE
 [actions-badge]: https://github.com/JohnPeel/api-client/workflows/CI/badge.svg
 [actions-url]: https://github.com/JohnPeel/api-client/actions?query=workflow%3ACI+branch%3Amaster
-[docs-badge]: https://img.shields.io/badge/docs-latest-brightgreen
-[docs-url]: https://johnpeel.github.io/api-client/api_client/
+[docs-badge]: https://img.shields.io/docsrs/api-client
+[docs-url]: https://docs.rs/api-client/latest/api_client
 
 This project provides a macro for quickly creating REST api client structs in Rust.
 
