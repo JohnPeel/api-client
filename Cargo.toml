@@ -3,6 +3,7 @@ name = "api-client"
 version = "0.1.0"
 authors = ["John Peel <john@dgby.org>"]
 edition = "2021"
+description = "Provides a macro for quickly creating REST api client structs"
 repository = "https://github.com/JohnPeel/api-client/"
 documentation = "https://johnpeel.github.io/api-client/api_client/"
 license = "MIT"
