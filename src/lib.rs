@@ -1,27 +1,18 @@
-
-use reqwest::{Result, Client, Method, Response};
+use reqwest::{Client, Method, Response, Result};
 use serde::Serialize;
 
 pub enum Auth {
     None,
-    Basic {
-        username: String,
-        password: String
-    },
-    Bearer {
-        token: String
-    },
-    Header {
-        key: String,
-        value: String
-    }
+    Basic { username: String, password: String },
+    Bearer { token: String },
+    Header { key: String, value: String },
 }
 
 #[doc(hidden)]
 pub enum Body<'a, T: Serialize + ?Sized = ()> {
     None,
     Json(&'a T),
-    Form(&'a T)
+    Form(&'a T),
 }
 
 #[async_trait::async_trait(?Send)]
@@ -30,18 +21,23 @@ pub trait Api {
     fn auth(&self) -> &Auth;
 
     #[inline]
-    async fn request<T: Serialize + ?Sized>(&self, method: Method, url: &str, body: Body<'_, T>) -> Result<Response> {
+    async fn request<T: Serialize + ?Sized>(
+        &self,
+        method: Method,
+        url: &str,
+        body: Body<'_, T>,
+    ) -> Result<Response> {
         let request = self.client().request(method, url);
         let request = match self.auth() {
             Auth::None => request,
             Auth::Basic { username, password } => request.basic_auth(username, Some(password)),
             Auth::Bearer { token } => request.bearer_auth(token),
-            Auth::Header { key, value } => request.header(key, value)
+            Auth::Header { key, value } => request.header(key, value),
         };
         let request = match body {
             Body::None => request,
             Body::Json(body) => request.json(body),
-            Body::Form(body) => request.form(body)
+            Body::Form(body) => request.form(body),
         };
         request.send().await
     }
@@ -70,7 +66,7 @@ macro_rules! api {
             fn client(&self) -> &::reqwest::Client {
                 &self.client
             }
-            
+
             fn auth(&self) -> &$crate::Auth {
                 &self.auth
             }
@@ -271,26 +267,41 @@ mod tests {
             let todo_1 = api.todo(1).await.unwrap();
             assert_eq!(&all_todos[0], &todo_1);
 
-            let new_todo = api.create_todo(&CreateTodo {
-                user_id: 1,
-                title: "test".to_string(),
-                completed: false,
-            }).await.unwrap();
+            let new_todo = api
+                .create_todo(&CreateTodo {
+                    user_id: 1,
+                    title: "test".to_string(),
+                    completed: false,
+                })
+                .await
+                .unwrap();
             assert_eq!(new_todo.id, (all_todos.len() + 1) as u32);
 
-            let replaced_todo = api.replace_todo(&Todo {
-                title: "test".to_string(),
-                completed: true,
-                ..todo_1
-            }, 1).await.unwrap();
+            let replaced_todo = api
+                .replace_todo(
+                    &Todo {
+                        title: "test".to_string(),
+                        completed: true,
+                        ..todo_1
+                    },
+                    1,
+                )
+                .await
+                .unwrap();
             assert_eq!(replaced_todo.title, "test");
             assert!(replaced_todo.completed);
 
-            let updated_todo = api.update_todo(&UpdateTodo {
-                title: Some("test".to_string()),
-                completed: Some(true),
-                ..Default::default()
-            }, 1).await.unwrap();
+            let updated_todo = api
+                .update_todo(
+                    &UpdateTodo {
+                        title: Some("test".to_string()),
+                        completed: Some(true),
+                        ..Default::default()
+                    },
+                    1,
+                )
+                .await
+                .unwrap();
             assert_eq!(updated_todo.title, "test");
             assert!(updated_todo.completed);
 
