@@ -1,6 +1,20 @@
-# API Client
+# API Client &emsp; [![MIT licensed][mit-badge]][mit-url] [![Build Status][actions-badge]][actions-url] [![Documentation][docs-badge]][docs-url]
+
+[mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
+[mit-url]: https://github.com/JohnPeel/api-client/blob/master/LICENSE
+[actions-badge]: https://github.com/JohnPeel/api-client/workflows/CI/badge.svg
+[actions-url]: https://github.com/JohnPeel/api-client/actions?query=workflow%3ACI+branch%3Amaster
+[docs-badge]: https://img.shields.io/badge/docs-latest-brightgreen
+[docs-url]: https://johnpeel.github.io/api-client/api_client/
 
 This project provides a macro for quickly creating REST api client structs in Rust.
+
+## Adding to project
+
+```toml
+[dependencies]
+api-client = { git = "https://github.com/JohnPeel/api-client" }
+```
 
 ## Example
 
