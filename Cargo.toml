@@ -3,6 +3,8 @@ name = "api-client"
 version = "0.1.0"
 authors = ["John Peel <john@dgby.org>"]
 edition = "2021"
+repository = "https://github.com/JohnPeel/api-client/"
+documentation = "https://johnpeel.github.io/api-client/api_client/"
 license = "MIT"
 readme = "README.md"
 

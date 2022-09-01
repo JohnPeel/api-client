@@ -1,3 +1,5 @@
+#![warn(clippy::pedantic)]
+
 use reqwest::{Client, Method, Response, Result};
 use serde::Serialize;
 
@@ -187,7 +189,7 @@ mod tests {
     #![allow(unused)]
 
     use super::{api, Api, Auth};
-    use example::*;
+    use example::{CreateTodo, JsonPlaceholder, Todo, UpdateTodo};
 
     mod example {
         use super::api;
@@ -275,7 +277,7 @@ mod tests {
                 })
                 .await
                 .unwrap();
-            assert_eq!(new_todo.id, (all_todos.len() + 1) as u32);
+            assert_eq!(new_todo.id as usize, all_todos.len() + 1);
 
             let replaced_todo = api
                 .replace_todo(
