@@ -22,7 +22,9 @@ pub trait Api {
     fn client(&self) -> &Client;
     fn auth(&self) -> &Auth;
 
-    fn new(auth: Auth) -> Self where Self: Sized;
+    fn new(auth: Auth) -> Self
+    where
+        Self: Sized;
 
     #[inline]
     async fn request<T: Serialize + ?Sized>(
