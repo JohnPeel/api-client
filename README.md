@@ -13,7 +13,7 @@ This project provides a macro for quickly creating REST api client structs in Ru
 
 ```toml
 [dependencies]
-api-client = { git = "https://github.com/JohnPeel/api-client" }
+api-client = "0.1"
 ```
 
 ## Example
