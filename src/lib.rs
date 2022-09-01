@@ -13,6 +13,7 @@ pub enum Auth {
 #[doc(hidden)]
 pub enum Body<'a, T: Serialize + ?Sized = ()> {
     None,
+    #[cfg(feature = "json")]
     Json(&'a T),
     Form(&'a T),
 }
@@ -42,6 +43,7 @@ pub trait Api {
         };
         let request = match body {
             Body::None => request,
+            #[cfg(feature = "json")]
             Body::Json(body) => request.json(body),
             Body::Form(body) => request.form(body),
         };

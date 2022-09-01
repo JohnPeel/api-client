@@ -9,10 +9,14 @@ documentation = "https://johnpeel.github.io/api-client/api_client/"
 license = "MIT"
 readme = "README.md"
 
+[features]
+default = ["bytes", "json"]
+json = ["reqwest/json"]
+
 [dependencies]
 async-trait = "0.1"
-bytes = "1.2"
-reqwest = { version = "0.11", default-features = false, features = ["json"] }
+bytes = { version = "1.2", optional = true }
+reqwest = { version = "0.11", default-features = false }
 serde = { version = "1.0", features = ["derive"] }
 
 [dev-dependencies]
