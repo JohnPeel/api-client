@@ -1,7 +1,9 @@
-# API Client &emsp; [![MIT licensed][mit-badge]][mit-url] [![Build Status][actions-badge]][actions-url] [![Documentation][docs-badge]][docs-url]
+# API Client &emsp; [![MIT licensed][mit-badge]][mit-url] [![crates.io][crates-badge]][crates-url] [![Build Status][actions-badge]][actions-url] [![Documentation][docs-badge]][docs-url]
 
 [mit-badge]: https://img.shields.io/badge/license-MIT-blue.svg
 [mit-url]: https://github.com/JohnPeel/api-client/blob/master/LICENSE
+[crates-badge]: https://img.shields.io/crates/v/api-client
+[crates-url]: https://crates.io/crates/api-client
 [actions-badge]: https://github.com/JohnPeel/api-client/workflows/CI/badge.svg
 [actions-url]: https://github.com/JohnPeel/api-client/actions?query=workflow%3ACI+branch%3Amaster
 [docs-badge]: https://img.shields.io/docsrs/api-client
