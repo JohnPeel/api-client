@@ -19,11 +19,10 @@ api-client = { git = "https://github.com/JohnPeel/api-client" }
 ## Example
 
 ```rust
-use api_client::{api, Auth};
-
 pub use models::*;
 
 mod models {
+    use api_client::{api, Api, Auth};
     use serde::{Deserialize, Serialize};
 
     #[derive(Debug, PartialEq, Eq, Deserialize, Serialize)]
@@ -59,6 +58,10 @@ api!(pub struct JsonPlaceholder);
 const BASE_URL: &str = "https://jsonplaceholder.typicode.com";
 
 impl JsonPlaceholder {
+    pub fn new() -> Self {
+        Api::new(Auth::None)
+    }
+
     api! {
         pub fn todos() -> Json<Vec<Todo>> {
             GET "{BASE_URL}/todos"
@@ -88,7 +91,7 @@ impl JsonPlaceholder {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
-    let json_placeholder = JsonPlaceholder::new(Auth::None);
+    let json_placeholder = JsonPlaceholder::new();
 
     let todo_1 = json_placeholder.todo(1).await?;
     println!("{:?}", todo_1);

@@ -22,6 +22,8 @@ pub trait Api {
     fn client(&self) -> &Client;
     fn auth(&self) -> &Auth;
 
+    fn new(auth: Auth) -> Self where Self: Sized;
+
     #[inline]
     async fn request<T: Serialize + ?Sized>(
         &self,
@@ -55,15 +57,6 @@ macro_rules! api {
             auth: $crate::Auth
         }
 
-        impl $ident {
-            pub fn new(auth: $crate::Auth) -> Self {
-                Self {
-                    client: ::reqwest::Client::new(),
-                    auth
-                }
-            }
-        }
-
         impl $crate::Api for $ident {
             fn client(&self) -> &::reqwest::Client {
                 &self.client
@@ -71,6 +64,13 @@ macro_rules! api {
 
             fn auth(&self) -> &$crate::Auth {
                 &self.auth
+            }
+
+            fn new(auth: $crate::Auth) -> Self where Self: Sized {
+                $ident {
+                    client: ::reqwest::Client::new(),
+                    auth
+                }
             }
         }
     };
@@ -188,11 +188,10 @@ macro_rules! api {
 mod tests {
     #![allow(unused)]
 
-    use super::{api, Api, Auth};
     use example::{CreateTodo, JsonPlaceholder, Todo, UpdateTodo};
 
     mod example {
-        use super::api;
+        use crate::{api, Api, Auth};
 
         pub use models::*;
 
@@ -232,6 +231,10 @@ mod tests {
         const BASE_URL: &str = "https://jsonplaceholder.typicode.com";
 
         impl JsonPlaceholder {
+            pub fn new() -> Self {
+                Api::new(Auth::None)
+            }
+
             api! {
                 pub fn todos() -> Json<Vec<Todo>> {
                     GET "{BASE_URL}/todos"
@@ -263,7 +266,7 @@ mod tests {
     #[test]
     fn json_placeholder() {
         tokio_test::block_on(async {
-            let api = JsonPlaceholder::new(Auth::None);
+            let api = JsonPlaceholder::new();
 
             let all_todos = api.todos().await.unwrap();
             let todo_1 = api.todo(1).await.unwrap();
