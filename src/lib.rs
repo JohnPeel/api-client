@@ -77,7 +77,7 @@ macro_rules! api {
         }
     };
 
-    ($vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty),*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
+    ($vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name $ty),*) -> ::reqwest::Result<::reqwest::StatusCode> {
             use $crate::Api as _;
@@ -86,7 +86,7 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty),*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
+    ($vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<String> {
             use $crate::Api as _;
@@ -95,7 +95,7 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty),*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
+    ($vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::bytes::Bytes> {
             use $crate::Api as _;
@@ -104,7 +104,7 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty),*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
+    ($vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<$res> {
             use $crate::Api as _;
@@ -113,7 +113,7 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty),*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
+    ($vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::reqwest::StatusCode> {
             use $crate::Api as _;
@@ -122,7 +122,7 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty),*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
+    ($vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<String> {
             use $crate::Api as _;
@@ -131,7 +131,7 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty),*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
+    ($vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::bytes::Bytes> {
             use $crate::Api as _;
@@ -140,7 +140,7 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty),*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
+    ($vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<$res> {
             use $crate::Api as _;
