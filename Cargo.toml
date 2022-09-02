@@ -1,6 +1,6 @@
 [package]
 name = "api-client"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["John Peel <john@dgby.org>"]
 edition = "2021"
 description = "Provides a macro for quickly creating REST api client structs"
@@ -11,8 +11,9 @@ readme = "README.md"
 rust-version = "1.56"
 
 [features]
-default = ["json"]
+default = ["json", "multipart"]
 json = ["reqwest/json"]
+multipart = ["reqwest/multipart"]
 
 [dependencies]
 async-trait = "0.1"
