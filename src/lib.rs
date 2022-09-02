@@ -1,25 +1,41 @@
+#![doc = include_str!("../README.md")]
+#![warn(missing_docs)]
+#![warn(clippy::missing_docs_in_private_items)]
 #![warn(clippy::pedantic)]
 
 use reqwest::{Client, Method, RequestBuilder, Response, Result};
 use serde::Serialize;
 
+/// Used internally to the api! macro.
 #[doc(hidden)]
 pub enum Body<'a, T: Serialize + ?Sized = ()> {
+    /// No body.
     None,
+    /// JSON body.
     #[cfg(feature = "json")]
     #[cfg_attr(docsrs, doc(cfg(feature = "json")))]
     Json(&'a T),
+    /// Form body.
     Form(&'a T),
 }
 
+/// The main API trait.
+///
+/// If you need custom behavior, such as authentication, you should implement this trait on your custom struct. See the [Api::pre_request] method for more details.
+///
+/// Otherwise, you can use the [api] macro to generate a struct with a proper implementation of this trait.
 #[async_trait::async_trait(?Send)]
 pub trait Api {
-    /// Returns a reqwest client to handle http/s requests.
+    /// Returns a reference to a reqwest Client to create requests.
     fn client(&self) -> &Client;
 
-    /// Handle pre-request logic.
+    /// You can use this method to modify the request before sending it.
     ///
-    /// # Authentication Example
+    /// Some good examples of usage are:
+    ///  - Authentication
+    ///  - Custom headers (can also be done with a method on Client)
+    ///
+    /// # Authentication
     /// ```rust
     /// use api_client::{api, Api};
     /// use reqwest::{Client, RequestBuilder};
@@ -53,6 +69,18 @@ pub trait Api {
         Ok(request)
     }
 
+    /// Used internally in the api! macro. Mostly for ergonmics.
+    ///
+    /// # Usage
+    /// ```rust
+    /// # use api_client::{api, Api};
+    ///
+    /// api!(pub struct Example);
+    ///
+    /// fn main() {
+    ///     let example = Example::new();
+    /// }
+    /// ```
     #[doc(hidden)]
     #[inline]
     #[must_use]
@@ -63,6 +91,7 @@ pub trait Api {
         unimplemented!()
     }
 
+    /// Used internally in the api! macro to handle all requests.
     #[doc(hidden)]
     #[inline]
     async fn request<T: Serialize + ?Sized>(
@@ -82,6 +111,53 @@ pub trait Api {
     }
 }
 
+/// Magic macro for API structs.
+///
+/// # Simple Usage (auto generated struct)
+/// ```rust
+/// use api_client::{api, Api};
+/// use reqwest::{Client, RequestBuilder};
+///
+/// api!(pub struct ExampleApi);
+///
+/// impl ExampleApi {
+///     api! {
+///         fn example() -> String {
+///            GET "https://example.com"
+///         }
+///     }
+/// }
+/// ```
+///
+/// # Advanced Usage (manually created struct and [Api] implementation)
+/// ```rust
+/// use api_client::{api, Api};
+/// use reqwest::{Client, RequestBuilder};
+///
+/// struct ExampleApi {
+///     client: Client,
+///     username: String,
+///     password: String
+/// }
+///
+/// impl Api for ExampleApi {
+///     fn client(&self) -> &Client {
+///         &self.client
+///     }
+///
+///     fn pre_request(&self, request: RequestBuilder) -> reqwest::Result<RequestBuilder> {
+///         Ok(request.basic_auth(&self.username, Some(&self.password)))
+///     }
+/// }
+///
+/// impl ExampleApi {
+///     api! {
+///         fn example() -> String {
+///            GET "https://example.com"
+///         }
+///     }
+/// }
+/// ```
 #[macro_export]
 macro_rules! api {
     () => {};
