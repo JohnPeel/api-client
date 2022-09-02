@@ -1,32 +1,69 @@
 #![warn(clippy::pedantic)]
 
-use reqwest::{Client, Method, Response, Result};
+use reqwest::{Client, Method, RequestBuilder, Response, Result};
 use serde::Serialize;
-
-pub enum Auth {
-    None,
-    Basic { username: String, password: String },
-    Bearer { token: String },
-    Header { key: String, value: String },
-}
 
 #[doc(hidden)]
 pub enum Body<'a, T: Serialize + ?Sized = ()> {
     None,
     #[cfg(feature = "json")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "json")))]
     Json(&'a T),
     Form(&'a T),
 }
 
 #[async_trait::async_trait(?Send)]
 pub trait Api {
+    /// Returns a reqwest client to handle http/s requests.
     fn client(&self) -> &Client;
-    fn auth(&self) -> &Auth;
 
-    fn new(auth: Auth) -> Self
+    /// Handle pre-request logic.
+    ///
+    /// # Authentication Example
+    /// ```rust
+    /// use api_client::{api, Api};
+    /// use reqwest::{Client, RequestBuilder};
+    ///
+    /// struct ExampleApi {
+    ///     client: Client,
+    ///     username: String,
+    ///     password: String
+    /// }
+    ///
+    /// impl Api for ExampleApi {
+    ///     fn client(&self) -> &Client {
+    ///         &self.client
+    ///     }
+    ///
+    ///     fn pre_request(&self, request: RequestBuilder) -> reqwest::Result<RequestBuilder> {
+    ///         Ok(request.basic_auth(&self.username, Some(&self.password)))
+    ///     }
+    /// }
+    ///
+    /// impl ExampleApi {
+    ///     api! {
+    ///         fn example() -> String {
+    ///            GET "https://example.com"
+    ///         }
+    ///     }
+    /// }
+    /// ```
+    #[inline]
+    fn pre_request(&self, request: RequestBuilder) -> Result<RequestBuilder> {
+        Ok(request)
+    }
+
+    #[doc(hidden)]
+    #[inline]
+    #[must_use]
+    fn new() -> Self
     where
-        Self: Sized;
+        Self: Sized,
+    {
+        unimplemented!()
+    }
 
+    #[doc(hidden)]
     #[inline]
     async fn request<T: Serialize + ?Sized>(
         &self,
@@ -34,13 +71,7 @@ pub trait Api {
         url: &str,
         body: Body<'_, T>,
     ) -> Result<Response> {
-        let request = self.client().request(method, url);
-        let request = match self.auth() {
-            Auth::None => request,
-            Auth::Basic { username, password } => request.basic_auth(username, Some(password)),
-            Auth::Bearer { token } => request.bearer_auth(token),
-            Auth::Header { key, value } => request.header(key, value),
-        };
+        let request = self.pre_request(self.client().request(method, url))?;
         let request = match body {
             Body::None => request,
             #[cfg(feature = "json")]
@@ -56,25 +87,15 @@ macro_rules! api {
     () => {};
 
     ($vis:vis struct $ident:ident) => {
-        $vis struct $ident {
-            client: ::reqwest::Client,
-            auth: $crate::Auth
-        }
+        $vis struct $ident(::reqwest::Client);
 
         impl $crate::Api for $ident {
             fn client(&self) -> &::reqwest::Client {
-                &self.client
+                &self.0
             }
 
-            fn auth(&self) -> &$crate::Auth {
-                &self.auth
-            }
-
-            fn new(auth: $crate::Auth) -> Self where Self: Sized {
-                $ident {
-                    client: ::reqwest::Client::new(),
-                    auth
-                }
+            fn new() -> Self where Self: Sized {
+                $ident(::reqwest::Client::new())
             }
         }
     };
@@ -195,7 +216,7 @@ mod tests {
     use example::{CreateTodo, JsonPlaceholder, Todo, UpdateTodo};
 
     mod example {
-        use crate::{api, Api, Auth};
+        use crate::{api, Api};
 
         pub use models::*;
 
@@ -236,7 +257,7 @@ mod tests {
 
         impl JsonPlaceholder {
             pub fn new() -> Self {
-                Api::new(Auth::None)
+                Api::new()
             }
 
             api! {

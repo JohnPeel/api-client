@@ -22,7 +22,7 @@ api-client = "0.1"
 
 ```rust
 mod api {
-    use api_client::{api, Api, Auth};
+    use api_client::{api, Api};
 
     pub use models::*;
 
@@ -63,7 +63,7 @@ mod api {
 
     impl JsonPlaceholder {
         pub fn new() -> Self {
-            Api::new(Auth::None)
+            Api::new()
         }
 
         api! {
