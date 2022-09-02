@@ -168,7 +168,8 @@ pub trait Api {
 macro_rules! api {
     () => {};
 
-    ($vis:vis struct $ident:ident) => {
+    ($(#[$attr:meta])* $vis:vis struct $ident:ident) => {
+        $(#[$attr])*
         $vis struct $ident(::reqwest::Client);
 
         impl $crate::Api for $ident {
@@ -182,7 +183,8 @@ macro_rules! api {
         }
     };
 
-    ($vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
+        $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name $ty),*) -> ::reqwest::Result<::reqwest::StatusCode> {
             use $crate::Api as _;
@@ -191,7 +193,8 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
+        $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<String> {
             use $crate::Api as _;
@@ -200,7 +203,8 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
+        $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::bytes::Bytes> {
             use $crate::Api as _;
@@ -209,7 +213,8 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
+        $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<$res> {
             use $crate::Api as _;
@@ -218,7 +223,8 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
+        $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::reqwest::StatusCode> {
             use $crate::Api as _;
@@ -227,7 +233,8 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
+        $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<String> {
             use $crate::Api as _;
@@ -236,7 +243,8 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
+        $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::bytes::Bytes> {
             use $crate::Api as _;
@@ -245,7 +253,8 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
+        $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<$res> {
             use $crate::Api as _;
@@ -254,43 +263,8 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident(request: Multipart<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
-        #[inline]
-        $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::reqwest::StatusCode> {
-            use $crate::Api as _;
-            self.request(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::Multipart(request)).await.map(|res| res.status())
-        }
-        api!($($rest)*);
-    };
-
-    ($vis:vis fn $ident:ident(request: Multipart<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
-        #[inline]
-        $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<String> {
-            use $crate::Api as _;
-            self.request(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::Multipart(request)).await?.text().await
-        }
-        api!($($rest)*);
-    };
-
-    ($vis:vis fn $ident:ident(request: Multipart<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
-        #[inline]
-        $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::bytes::Bytes> {
-            use $crate::Api as _;
-            self.request(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::Multipart(request)).await?.bytes().await
-        }
-        api!($($rest)*);
-    };
-
-    ($vis:vis fn $ident:ident(request: Multipart<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
-        #[inline]
-        $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<$res> {
-            use $crate::Api as _;
-            self.request(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::Multipart(request)).await?.json().await
-        }
-        api!($($rest)*);
-    };
-
-    ($vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
+        $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, $($name: $ty),*) -> ::reqwest::Result<::reqwest::StatusCode> {
             use $crate::Api as _;
@@ -299,7 +273,8 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
+        $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, $($name: $ty),*) -> ::reqwest::Result<String> {
             use $crate::Api as _;
@@ -308,7 +283,8 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
+        $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, $($name: $ty),*) -> ::reqwest::Result<::bytes::Bytes> {
             use $crate::Api as _;
@@ -317,7 +293,8 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
+        $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, $($name: $ty),*) -> ::reqwest::Result<$res> {
             use $crate::Api as _;
