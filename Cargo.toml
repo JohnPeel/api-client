@@ -1,6 +1,6 @@
 [package]
 name = "api-client"
-version = "0.1.7"
+version = "0.2.0"
 authors = ["John Peel <john@dgby.org>"]
 edition = "2021"
 description = "Provides a macro for quickly creating REST api client structs"
