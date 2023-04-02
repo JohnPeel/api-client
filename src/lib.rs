@@ -3,12 +3,14 @@
 #![warn(clippy::missing_docs_in_private_items)]
 #![warn(clippy::pedantic)]
 
-use reqwest::{Client, Method, RequestBuilder, Response, Result};
-use serde::Serialize;
+use reqwest::{Client, RequestBuilder, Result};
+
+#[doc(hidden)]
+pub use reqwest;
 
 /// Used internally to the api! macro.
 #[doc(hidden)]
-pub enum Body<'a, T: Serialize + ?Sized = ()> {
+pub enum Body<'a, T: ?Sized = ()> {
     /// No body.
     None,
     /// JSON body.
@@ -94,27 +96,6 @@ pub trait Api {
     {
         unimplemented!()
     }
-
-    /// Used internally in the api! macro to handle all requests.
-    #[doc(hidden)]
-    #[inline]
-    async fn request<T: Serialize + ?Sized>(
-        &self,
-        method: Method,
-        url: &str,
-        body: Body<'_, T>,
-    ) -> Result<Response> {
-        let request = self.pre_request(self.client().request(method, url))?;
-        let request = match body {
-            Body::None => request,
-            #[cfg(feature = "json")]
-            Body::Json(body) => request.json(body),
-            Body::Form(body) => request.form(body),
-            #[cfg(feature = "multipart")]
-            Body::Multipart(form) => request.multipart(form),
-        };
-        request.send().await
-    }
 }
 
 /// Magic macro for API structs.
@@ -183,122 +164,187 @@ macro_rules! api {
         }
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name $ty),*) -> ::reqwest::Result<::reqwest::StatusCode> {
             use $crate::Api as _;
-            self.request(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::Json(request)).await.map(|res| res.status())
+            self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
+                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                .json(request)
+                .send()
+                .await
+                .map(|res| res.status())
         }
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<String> {
             use $crate::Api as _;
-            self.request(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::Json(request)).await?.text().await
+            self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
+                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                .json(request)
+                .send()
+                .await?
+                .text()
+                .await
         }
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::bytes::Bytes> {
             use $crate::Api as _;
-            self.request(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::Json(request)).await?.bytes().await
+            self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
+                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                .json(request)
+                .send()
+                .await?
+                .bytes()
+                .await
         }
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<$res> {
             use $crate::Api as _;
-            self.request(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::Json(request)).await?.json().await
+            self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
+                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                .json(request)
+                .send()
+                .await?
+                .json()
+                .await
         }
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::reqwest::StatusCode> {
             use $crate::Api as _;
-            self.request(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::Form(request)).await.map(|res| res.status())
+            self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
+                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                .form(request)
+                .send()
+                .await
+                .map(|res| res.status())
         }
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<String> {
             use $crate::Api as _;
-            self.request(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::Form(request)).await?.text().await
+            self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
+                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                .form(request)
+                .send()
+                .await?
+                .text()
+                .await
         }
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::bytes::Bytes> {
             use $crate::Api as _;
-            self.request(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::Form(request)).await?.bytes().await
+            self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
+                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                .form(request)
+                .send()
+                .await?
+                .bytes()
+                .await
         }
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<$res> {
             use $crate::Api as _;
-            self.request(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::Form(request)).await?.json().await
+            self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
+                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                .form(request)
+                .send()
+                .await?
+                .json()
+                .await
         }
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> StatusCode { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> StatusCode { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, $($name: $ty),*) -> ::reqwest::Result<::reqwest::StatusCode> {
             use $crate::Api as _;
-            self.request::<()>(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::None).await.map(|res| res.status())
+            self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
+                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                .send()
+                .await
+                .map(|res| res.status())
         }
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> String { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> String { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, $($name: $ty),*) -> ::reqwest::Result<String> {
             use $crate::Api as _;
-            self.request::<()>(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::None).await?.text().await
+            self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
+                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                .send()
+                .await?
+                .text()
+                .await
         }
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> Bytes { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> Bytes { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, $($name: $ty),*) -> ::reqwest::Result<::bytes::Bytes> {
             use $crate::Api as _;
-            self.request::<()>(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::None).await?.bytes().await
+            self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
+                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                .send()
+                .await?
+                .bytes()
+                .await
         }
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> Json<$res:ty> { $method:tt $url:literal } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> Json<$res:ty> { $method:ident $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, $($name: $ty),*) -> ::reqwest::Result<$res> {
             use $crate::Api as _;
-            self.request::<()>(::reqwest::Method::$method, format!($url).as_str(), $crate::Body::None).await?.json().await
+            self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
+                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                .send()
+                .await?
+                .json()
+                .await
         }
         api!($($rest)*);
     };
@@ -309,6 +355,8 @@ mod tests {
     #![allow(unused)]
 
     use example::{CreateTodo, JsonPlaceholder, Todo, UpdateTodo};
+
+    use self::headers::HeaderTest;
 
     mod example {
         use crate::{api, Api};
@@ -383,54 +431,83 @@ mod tests {
         }
     }
 
-    #[test]
-    fn json_placeholder() {
-        tokio_test::block_on(async {
-            let api = JsonPlaceholder::new();
+    #[tokio::test]
+    async fn json_placeholder() {
+        let api = JsonPlaceholder::new();
 
-            let all_todos = api.todos().await.unwrap();
-            let todo_1 = api.todo(1).await.unwrap();
-            assert_eq!(&all_todos[0], &todo_1);
+        let all_todos = api.todos().await.unwrap();
+        let todo_1 = api.todo(1).await.unwrap();
+        assert_eq!(&all_todos[0], &todo_1);
 
-            let new_todo = api
-                .create_todo(&CreateTodo {
-                    user_id: 1,
+        let new_todo = api
+            .create_todo(&CreateTodo {
+                user_id: 1,
+                title: "test".to_string(),
+                completed: false,
+            })
+            .await
+            .unwrap();
+        assert_eq!(new_todo.id as usize, all_todos.len() + 1);
+
+        let replaced_todo = api
+            .replace_todo(
+                &Todo {
                     title: "test".to_string(),
-                    completed: false,
-                })
-                .await
-                .unwrap();
-            assert_eq!(new_todo.id as usize, all_todos.len() + 1);
+                    completed: true,
+                    ..todo_1
+                },
+                1,
+            )
+            .await
+            .unwrap();
+        assert_eq!(replaced_todo.title, "test");
+        assert!(replaced_todo.completed);
 
-            let replaced_todo = api
-                .replace_todo(
-                    &Todo {
-                        title: "test".to_string(),
-                        completed: true,
-                        ..todo_1
-                    },
-                    1,
-                )
-                .await
-                .unwrap();
-            assert_eq!(replaced_todo.title, "test");
-            assert!(replaced_todo.completed);
+        let updated_todo = api
+            .update_todo(
+                &UpdateTodo {
+                    title: Some("test".to_string()),
+                    completed: Some(true),
+                    ..Default::default()
+                },
+                1,
+            )
+            .await
+            .unwrap();
+        assert_eq!(updated_todo.title, "test");
+        assert!(updated_todo.completed);
 
-            let updated_todo = api
-                .update_todo(
-                    &UpdateTodo {
-                        title: Some("test".to_string()),
-                        completed: Some(true),
-                        ..Default::default()
-                    },
-                    1,
-                )
-                .await
-                .unwrap();
-            assert_eq!(updated_todo.title, "test");
-            assert!(updated_todo.completed);
+        assert!(api.delete_todo(1).await.unwrap().is_success());
+    }
 
-            assert!(api.delete_todo(1).await.unwrap().is_success());
-        });
+    mod headers {
+        use crate::{api, Api};
+
+        api!(pub struct HeaderTest);
+
+        const BASE_URL: &str = "https://ifconfig.me";
+
+        impl HeaderTest {
+            pub fn new() -> Self {
+                Api::new()
+            }
+
+            api! {
+                pub fn get_ua(ua: &str) -> String {
+                    GET "{BASE_URL}/ua"
+                    USER_AGENT: "{ua}"
+                }
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn example_header() {
+        let api = HeaderTest::new();
+
+        assert_eq!(
+            api.get_ua("Api-client 0.1").await.unwrap(),
+            "Api-client 0.1"
+        );
     }
 }
