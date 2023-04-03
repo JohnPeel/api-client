@@ -164,13 +164,13 @@ macro_rules! api {
         }
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal $($headername:tt: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name $ty),*) -> ::reqwest::Result<::reqwest::StatusCode> {
             use $crate::Api as _;
             self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
-                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                $(.header($headername, format!($headervalue).as_str()))*
                 .json(request)
                 .send()
                 .await
@@ -179,13 +179,13 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal $($headername:tt: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<String> {
             use $crate::Api as _;
             self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
-                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                $(.header($headername, format!($headervalue).as_str()))*
                 .json(request)
                 .send()
                 .await?
@@ -195,13 +195,13 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal $($headername:tt: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::bytes::Bytes> {
             use $crate::Api as _;
             self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
-                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                $(.header($headername, format!($headervalue).as_str()))*
                 .json(request)
                 .send()
                 .await?
@@ -211,13 +211,13 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Json<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal $($headername:tt: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<$res> {
             use $crate::Api as _;
             self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
-                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                $(.header($headername, format!($headervalue).as_str()))*
                 .json(request)
                 .send()
                 .await?
@@ -227,13 +227,13 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> StatusCode { $method:tt $url:literal $($headername:tt: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::reqwest::StatusCode> {
             use $crate::Api as _;
             self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
-                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                $(.header($headername, format!($headervalue).as_str()))*
                 .form(request)
                 .send()
                 .await
@@ -242,13 +242,13 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> String { $method:tt $url:literal $($headername:tt: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<String> {
             use $crate::Api as _;
             self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
-                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                $(.header($headername, format!($headervalue).as_str()))*
                 .form(request)
                 .send()
                 .await?
@@ -258,13 +258,13 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Bytes { $method:tt $url:literal $($headername:tt: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<::bytes::Bytes> {
             use $crate::Api as _;
             self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
-                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                $(.header($headername, format!($headervalue).as_str()))*
                 .form(request)
                 .send()
                 .await?
@@ -274,13 +274,13 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident(request: Form<$req:ty>$(, $name:ident: $ty:ty)*) -> Json<$res:ty> { $method:tt $url:literal $($headername:tt: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, request: &$req, $($name: $ty),*) -> ::reqwest::Result<$res> {
             use $crate::Api as _;
             self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
-                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                $(.header($headername, format!($headervalue).as_str()))*
                 .form(request)
                 .send()
                 .await?
@@ -290,13 +290,13 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> StatusCode { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> StatusCode { $method:tt $url:literal $($headername:tt: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, $($name: $ty),*) -> ::reqwest::Result<::reqwest::StatusCode> {
             use $crate::Api as _;
             self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
-                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                $(.header($headername, format!($headervalue).as_str()))*
                 .send()
                 .await
                 .map(|res| res.status())
@@ -304,13 +304,13 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> String { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> String { $method:tt $url:literal $($headername:tt: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, $($name: $ty),*) -> ::reqwest::Result<String> {
             use $crate::Api as _;
             self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
-                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                $(.header($headername, format!($headervalue).as_str()))*
                 .send()
                 .await?
                 .text()
@@ -319,13 +319,13 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> Bytes { $method:tt $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> Bytes { $method:tt $url:literal $($headername:tt: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, $($name: $ty),*) -> ::reqwest::Result<::bytes::Bytes> {
             use $crate::Api as _;
             self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
-                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                $(.header($headername, format!($headervalue).as_str()))*
                 .send()
                 .await?
                 .bytes()
@@ -334,13 +334,13 @@ macro_rules! api {
         api!($($rest)*);
     };
 
-    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> Json<$res:ty> { $method:ident $url:literal $($headername:ident: $headervalue:expr)* } $($rest:tt)*) => {
+    ($(#[$attr:meta])* $vis:vis fn $ident:ident($($name:ident: $ty:ty),*) -> Json<$res:ty> { $method:ident $url:literal $($headername:tt: $headervalue:expr)* } $($rest:tt)*) => {
         $(#[$attr])*
         #[inline]
         $vis async fn $ident(&self, $($name: $ty),*) -> ::reqwest::Result<$res> {
             use $crate::Api as _;
             self.pre_request(self.client().request($crate::reqwest::Method::$method, format!($url).as_str()))?
-                $(.header($crate::reqwest::header::$headername, format!($headervalue).as_str()))*
+                $(.header($headername, format!($headervalue).as_str()))*
                 .send()
                 .await?
                 .json()
@@ -481,6 +481,8 @@ mod tests {
     }
 
     mod headers {
+        use reqwest::header::USER_AGENT;
+
         use crate::{api, Api};
 
         api!(pub struct HeaderTest);
@@ -496,6 +498,7 @@ mod tests {
                 pub fn get_ua(ua: &str) -> String {
                     GET "{BASE_URL}/ua"
                     USER_AGENT: "{ua}"
+                    "X-REQUEST-ID": "0"
                 }
             }
         }
