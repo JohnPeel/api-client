@@ -490,6 +490,7 @@ mod tests {
         const BASE_URL: &str = "https://ifconfig.me";
 
         impl HeaderTest {
+            #[inline]
             pub fn new() -> Self {
                 Api::new()
             }
@@ -512,5 +513,49 @@ mod tests {
             api.get_ua("Api-client 0.1").await.unwrap(),
             "Api-client 0.1"
         );
+    }
+
+    mod echo {
+        use std::collections::HashMap;
+
+        use reqwest::header::USER_AGENT;
+
+        use crate::{api, Api};
+
+        api!(pub struct Echo);
+
+        const BASE_URL: &str = "http://postman-echo.com";
+
+        #[derive(Debug, serde::Deserialize)]
+        pub struct Response {
+            pub args: HashMap<String, String>,
+            pub headers: HashMap<String, String>,
+            pub url: String,
+        }
+
+        impl Echo {
+            #[inline]
+            pub fn new() -> Self {
+                Api::new()
+            }
+
+            api! {
+                pub fn echo() -> Json<Response> {
+                    GET "{BASE_URL}/get"
+                    USER_AGENT: "api-client/1.0"
+                    "x-request-id": "42"
+                }
+            }
+        }
+
+        #[tokio::test]
+        async fn echo_test() {
+            let api = Echo::new();
+
+            let response = api.echo().await.unwrap();
+
+            assert_eq!(response.headers.get("user-agent").map(String::as_str), Some("api-client/1.0"));
+            assert_eq!(response.headers.get("x-request-id").map(String::as_str), Some("42"));
+        }
     }
 }
