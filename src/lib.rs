@@ -554,8 +554,14 @@ mod tests {
 
             let response = api.echo().await.unwrap();
 
-            assert_eq!(response.headers.get("user-agent").map(String::as_str), Some("api-client/1.0"));
-            assert_eq!(response.headers.get("x-request-id").map(String::as_str), Some("42"));
+            assert_eq!(
+                response.headers.get("user-agent").map(String::as_str),
+                Some("api-client/1.0")
+            );
+            assert_eq!(
+                response.headers.get("x-request-id").map(String::as_str),
+                Some("42")
+            );
         }
     }
 }
